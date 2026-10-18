@@ -33,9 +33,9 @@ Next.js 14 (App Router, TypeScript) · Tailwind + shadcn/ui · Supabase (Postgre
    ```
    Existing accounts can simply be updated in SQL:
    ```sql
-   update public.profiles set role='admin',   full_name='Nuwan Perera'  where email='admin@penzoparts.lk';
-   update public.profiles set role='manager', full_name='Ishara Silva'  where email='manager@penzoparts.lk';
-   update public.profiles set role='cashier', full_name='Ruwan Fernando' where email='cashier@penzoparts.lk';
+   update public.profiles set role='admin',   full_name='Nuwan Perera'   where email='you@yourcompany.lk';
+   update public.profiles set role='manager', full_name='Ishara Silva'   where email='manager@yourcompany.lk';
+   update public.profiles set role='cashier', full_name='Ruwan Fernando' where email='cashier@yourcompany.lk';
    ```
 
 ### 2. App

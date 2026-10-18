@@ -74,7 +74,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="username"
                   autoFocus
-                  placeholder="admin@penzoparts.lk"
+                  placeholder="you@company.lk"
                   className="border-slate-700 bg-slate-950 text-slate-100"
                 />
               </div>

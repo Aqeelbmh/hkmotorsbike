@@ -82,7 +82,7 @@ export async function updateUserRole(userId: string, input: unknown) {
   }
 
   const supabase = createClient()
-  // Keep the auth user in sync (the mock's permission guards read the auth role).
+  // Keep the auth user in sync (role guards read the auth user metadata).
   const { error: authErr } = await supabase.auth.admin.updateUserById(userId, {
     user_metadata: { role: d.role },
   })
