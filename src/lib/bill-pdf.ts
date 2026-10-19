@@ -20,10 +20,22 @@ const dateTimeLabel = (d: string) =>
     minute: '2-digit',
   })
 
+/**
+ * EAN-13 encodes digits only, and our bill numbers are prefixed (`SO-000001`).
+ * Keep the numeric part and stretch it to the 12 digits JsBarcode expects, so
+ * the same payload is produced whether we render to canvas or to SVG.
+ * Returns null when the value carries no digits at all (nothing scannable).
+ */
+function ean13Payload(value: string): string | null {
+  const digits = String(value ?? '').replace(/\D/g, '')
+  return digits ? digits.padEnd(12, '0').slice(0, 12) : null
+}
+
 /** EAN-13 style strip for the bill number; silently skipped if the value is unusable. */
 function barcodePng(value: string): string | null {
   try {
-    const digits = value.replace(/\D/g, '').padEnd(12, '0').slice(0, 12)
+    const digits = ean13Payload(value)
+    if (!digits) return null
     const canvas = document.createElement('canvas')
     JsBarcode(canvas, digits, {
       format: 'ean13',
@@ -280,6 +292,23 @@ export function printThermalBill(bill: BillData, opts: BillPrinter = {}): boolea
     )
     .join('')
 
+  // Build the strip here instead of sanitising inside the print window: passing
+  // letters to `format: 'ean13'` throws and the barcode silently never appears.
+  const barcodeDigits = ean13Payload(s.bill_no)
+  const barcodeHtml = barcodeDigits
+    ? `<div id="bc"></div>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script>
+      try {
+        if (window.JsBarcode) {
+          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+          document.getElementById('bc').appendChild(svg)
+          JsBarcode(svg, '${barcodeDigits}', { format: 'ean13', width: 1.4, height: 34, fontSize: 11, margin: 0, displayValue: true })
+        }
+      } catch (e) {}
+    </script>`
+    : ''
+
   const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(s.bill_no)}</title>
   <style>
     @page { size: 80mm auto; margin: 0 }
@@ -323,16 +352,8 @@ export function printThermalBill(bill: BillData, opts: BillPrinter = {}): boolea
     ${s.note ? `<div class="sub">Note: ${esc(s.note)}</div><hr/>` : ''}
     <div class="foot">${esc(bill.settings?.receipt_footer ?? 'Thank you for your business!')}</div>
     ${s.status !== 'completed' ? `<div class="c sub"><b>Status: ${esc(s.status).replace(/_/g, ' ')}</b></div>` : ''}
-    <div id="bc"></div>
-    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    ${barcodeHtml}
     <script>
-      try {
-        if (window.JsBarcode) {
-          var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-          document.getElementById('bc').appendChild(svg)
-          JsBarcode(svg, '${esc(s.bill_no).replace(/[^A-Za-z0-9]/g, '')}'.padEnd(12, '0').slice(0, 12), { format: 'ean13', width: 1.4, height: 34, fontSize: 11, margin: 0, displayValue: true })
-        }
-      } catch (e) {}
       window.addEventListener('load', function () { setTimeout(function () { window.focus(); window.print() }, 350) })
     </script>
   </body></html>`

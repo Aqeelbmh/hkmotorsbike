@@ -82,6 +82,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Dark-surface inputs (login): keep browser autofill readable on slate-950 */
+.input-dark:-webkit-autofill,
+.input-dark:-webkit-autofill:hover,
+.input-dark:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #020617 inset;
+  box-shadow: 0 0 0 1000px #020617 inset;
+  -webkit-text-fill-color: #f1f5f9;
+  caret-color: #f1f5f9;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 /* Print helpers: .print-area is the only thing that shows on paper,
    .print-hidden is dropped, .print-only (signature lines etc.) appears. */
 .print-only {
